@@ -2,7 +2,7 @@
 Посмотреть документацию к API GitHub, разобраться как вывести список репозиториев для конкретного пользователя,
 сохранить JSON-вывод в файле *.json; написать функцию, возвращающую(return) список репозиториев.
 """
-from pprint import pprint
+
 import requests
 import json
 import os
@@ -11,14 +11,13 @@ from dotenv import load_dotenv
 load_dotenv('./.env')
 
 
-
 class GitUser:
     info_user_json = None
     repo_list_json = None
     repos_on_all_pages = []
 
-    def __init__(self, username, token=None):
-        self.username = username
+    def __init__(self, user_name, token=None):
+        self.username = user_name
         self.token = token
 
     def request_data(self, url, param=None):
