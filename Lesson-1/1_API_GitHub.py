@@ -1,4 +1,6 @@
 """
+Задание №1
+
 Посмотреть документацию к API GitHub, разобраться как вывести список репозиториев для конкретного пользователя,
 сохранить JSON-вывод в файле *.json; написать функцию, возвращающую(return) список репозиториев.
 """
@@ -24,7 +26,7 @@ class GitUser:
         """Возвращает результат запроса по сформированному url"""
 
         if self.token:
-            info_request = requests.get(url[0], auth=(username, git_token), params=param)
+            info_request = requests.get(url[0], auth=(self.username, self.token), params=param)
         else:
             info_request = requests.get(url[1], params=param)
         if info_request.status_code == 200:
@@ -41,7 +43,6 @@ class GitUser:
 
     def repos_list(self):
         """Возвращает перечень репозиториев"""
-
         # Реализована возможность пагинации, чтобы забрать все репозитории
         page = 1
         self.repos_on_all_pages = []
@@ -50,15 +51,14 @@ class GitUser:
                                                f'https://api.github.com/users/{self.username}/repos'],
                                               {'page': page, 'per_page': 50})
             page += 1
-            # если вернулось 0 записей, то можно завершать сбор данных
+            # если вернулось 0 записей на странице, то можно завершать сбор данных
             if len(repos_on_page) == 0:
                 break
             self.repos_on_all_pages.extend(repos_on_page)
         return self.repos_on_all_pages
 
     def save_json(self, file_name=None, type_data='info'):
-        """Возвращает перечень репозиториев"""
-
+        """Сохраняет результаты в файл"""
         if file_name is None:
             return None
         if type_data == 'repos':
@@ -82,44 +82,40 @@ class GitUser:
             return f'Файл {file_name} создан успешно!'
 
 
+# Функция для вызова
+def user_repos(user_name):
+    user_git_object = GitUser(user_name)
+    return user_git_object.save_json(f'{user_name}_repos.json', 'repos')
+
+# Проверка работы функции
+
+
+while True:
+    input_user_git = input('Введите имя пользователя или q для выхода:')
+    if input_user_git == 'q':
+        break
+    print(user_repos(input_user_git))
+
+
+# Примеры расширенного использования:
+
 # ----- Проверка работоспособности -------:
 
 # Получим пользователя и токен из
-username = os.getenv('USER_GIT', None)
-git_token = os.getenv('TOKEN_GIT', None)
+# username = os.getenv('USER_GIT', None)
+# git_token = os.getenv('TOKEN_GIT', None)
 
-# Если нужно получить данные по пользователю, для которого известен токен.
-f = GitUser(username, git_token)
-print(f.save_json(f'{username} with token_repos.json', 'repos'))
-print(f.save_json(f'{username} with token_info.json', 'info'))
+# Если нужно получить данные по пользователю, для которого известен токен - публичные и приватные
+# f = GitUser(username, git_token)
+# print(f.save_json(f'{username} with token_repos.json', 'repos'))
+# print(f.save_json(f'{username} with token_info.json', 'info'))
 
 # Если нужно получить данные по пользователю без токена - только публичные репозитории
-f = GitUser(username)
-print(f.save_json(f'{username} no token_repos.json', 'repos'))
-print(f.save_json(f'{username} no token_info.json', 'info'))
+# f = GitUser(username)
+# print(f.save_json(f'{username} no token_repos.json', 'repos'))
+# print(f.save_json(f'{username} no token_info.json', 'info'))
 
 # Пример получения репозиториев Microsoft - 608 ссылок - см. результат выгрузки в отд.
 # f = GitUser('MicrosoftLearning')
 # print(f.save_json(r'MicrosoftLearning_repos.json', 'repos'))
 # print(f.save_json(r'MicrosoftLearning_info.json', 'info'))
-
-
-#
-# def sss():
-#     # Получим информацию о пользователе
-#     info_user = requests.get('https://api.github.com/user', auth=(username, git_token))
-#     pprint(info_user.json(), indent=1)
-#
-#     # Получим все ропозитории пользователя
-#     all_repos = requests.get('https://api.github.com/user/repos', auth=(username, git_token))
-#     print(all_repos.json()[1])
-#
-#     print('Запрос в лоб', requests.get('https://api.github.com/users/PZhirnov/repos').json())
-#     result = {}
-#     for repo in all_repos.json():
-#         result[repo['name']] = repo['html_url']
-#
-#     print(result)
-#
-#     with open('result.json', 'w') as f:
-#         json.dump(result, f)
