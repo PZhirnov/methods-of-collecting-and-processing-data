@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import time
+import pandas as pd
 
 
 URL_MAIN = 'https://hh.ru'
@@ -132,13 +133,14 @@ class DataFromPage:
 
 
 def get_hh(url_start, page_num=None):
-    data_all_pages = {}
+    data_all_pages = []
     page_html = request_page(url_start)
+    time.sleep(5)
     i = 0
     while True:
         vac_on_page = DataFromPage(page_html)
         data_from_page = vac_on_page.start_parsing(i+1)
-        data_all_pages[i] = data_from_page
+        data_all_pages.extend(data_from_page)
         print(f'Page: {i+1} {vac_on_page.num_vacancies_on_page}')
         i += 1
         if page_num == i:
@@ -147,10 +149,13 @@ def get_hh(url_start, page_num=None):
             page_html = request_page(vac_on_page.page_next_href)
         else:
             break
-        time.sleep(2)
+        time.sleep(5)
     return data_all_pages
 
 
 START_URL = 'https://hh.ru/search/vacancy?area=1&fromSearchLine=true&text=Python'
 
-print(get_hh(START_URL, 2))
+data = get_hh(START_URL, 1)
+data_frame = pd.DataFrame(data)
+data_frame.to_excel("output.xlsx")
+
