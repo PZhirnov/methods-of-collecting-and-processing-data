@@ -115,7 +115,7 @@ class DataFromPage:
                 requirements
                 ]
 
-    def start_parsing(self, num_page=0):
+    def start_parsing(self, page_num=None):
         """
         Запуск процедуры сбора данных
         :param num_pages:
@@ -127,10 +127,7 @@ class DataFromPage:
             vacancy_data = self.get_item(i)
             result_list.append(vacancy_data)
             i += 1
-            print(vacancy_data)
-            if i == num_page:
-                break
-            time.sleep(3)
+            print(f'{page_num} - {str(i)}:', vacancy_data)
         return result_list
 
 
@@ -140,9 +137,9 @@ def get_hh(url_start, page_num=None):
     i = 0
     while True:
         vac_on_page = DataFromPage(page_html)
-        data_from_page = vac_on_page.start_parsing()
+        data_from_page = vac_on_page.start_parsing(i+1)
         data_all_pages[i] = data_from_page
-        print(f'Page: {i-1} {vac_on_page.num_vacancies_on_page}')
+        print(f'Page: {i+1} {vac_on_page.num_vacancies_on_page}')
         i += 1
         if page_num == i:
             break
@@ -150,9 +147,10 @@ def get_hh(url_start, page_num=None):
             page_html = request_page(vac_on_page.page_next_href)
         else:
             break
+        time.sleep(2)
     return data_all_pages
 
 
 START_URL = 'https://hh.ru/search/vacancy?area=1&fromSearchLine=true&text=Python'
 
-print(get_hh(START_URL, 1))
+print(get_hh(START_URL, 2))
