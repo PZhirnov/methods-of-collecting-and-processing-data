@@ -60,3 +60,4 @@ class LeroyItem(scrapy.Item):
     )
     img_urls = scrapy.Field(input_processor=Compose(href_images))
     def_list = scrapy.Field(input_processor=Compose(def_dict_json))
+    image_paths = scrapy.Field()
