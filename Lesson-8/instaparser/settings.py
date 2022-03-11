@@ -8,6 +8,10 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+
 
 BOT_NAME = "instaparser"
 
@@ -102,3 +106,9 @@ MONGO_PORT = 27017
 MONGO_DB = "Instagram"
 MONGO_COLLECTION = "Users_new2"
 MONGO_COLLECTION_USERS = 'users_for_parse'
+
+# Возьмем пароль из файла .env, который должен лежать в каталоге с settings
+load_dotenv()
+
+USER_NAME = os.getenv('USER_NAME')
+ENC_PASS = os.getenv('ENC_PASS')

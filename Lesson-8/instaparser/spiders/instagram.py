@@ -8,11 +8,7 @@ import scrapy
 from scrapy.http import HtmlResponse
 
 from instaparser.items import InstaparserItem, InstaUserItem
-
-
-# https://www.instagram.com/graphql/query/
-# ?query_hash=8c2a529969ee035a5063f2fc8602a0fd
-# &variables=%7B%22id%22%3A%2227790688603%22%2C%22first%22%3A12%2C%22after%22%3A%22QVFBUS1lVHhvSHBZenR2S3c1ZGFzV2tPazVPTTY1Y0JLekdnSHdKbkZUN3FzbzRMMkZKMi1lRnlEczdFRFJYSXUwWk1fMWNRdHc4Mll1M1pQT0FZQXFkOA%3D%3D%22%7D
+from instaparser import settings
 
 
 class InstagramSpider(scrapy.Spider):
@@ -21,17 +17,12 @@ class InstagramSpider(scrapy.Spider):
     allowed_domains = ["instagram.com"]
     start_urls = ["https://www.instagram.com/"]
     login_url = "https://www.instagram.com/accounts/login/ajax/"
-    username = "zhirnov.pzhirnov"
+    username = settings.USER_NAME
     enc_pass = (
-        "#PWD_INSTAGRAM_BROWSER:10:1646990056:"
-        "Aa1QAHkmmnrHbkh46aQJrHvJzHs9c9PSc4LBHz"
-        "fwCHlLyG5rykWhkiil7soPv+Og0CNpPpPX99op8Z"
-        "udtgVzOqGZvQUFHqhmYHU8nb/A4ioC0qFOUhLaJ/fmx0rwtuYvfMttOrwoBi1iAeDi+g=="
+        settings.ENC_PASS
     )
     user_to_parse_url_template = "/%s"
-    # user_to_parse = "machinelearning"
-    # posts_hash = "32b14723a678bd4628d70c1f877b94c9"
-    # graphql_url = "https://www.instagram.com/graphql/query/?"
+
 
     def __init__(self, users_to_parse):
         super(InstagramSpider, self).__init__()
