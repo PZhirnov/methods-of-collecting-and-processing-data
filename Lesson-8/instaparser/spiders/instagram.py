@@ -110,6 +110,14 @@ class InstagramSpider(scrapy.Spider):
         str_variables = str(variables).replace(" ", "").replace("'", '"')
         return quote(str_variables)
 
+    def fetch_user_id(self, text: str, username: str):
+        print()
+        regexp = '{"id":"\\d+","username":"%s"}' % username
+        # regexp = '"userId":"\\d+"' # если не работает первый, то попробовать это
+        matched = re.search(regexp, text).group()
+        return json.loads(matched).get("id")
+        # return matched.replace('"', '').split(':')[1]
+
 # ****
     def current_user_page(self, response: HtmlResponse, username: str, next_max_id=None, user_group=None):
         print()
@@ -215,85 +223,6 @@ class InstagramSpider(scrapy.Spider):
 
 # ****
 
-# Парсинг публикации со страницы
-    def user_data_parse(self, response: HtmlResponse, username: str):
-        print()
-        user_id = self.fetch_user_id(response.text, username)
-        variables = {"first": 12, "id": user_id}
-        str_variables = self.make_str_variables(variables)
-        # print("$$$")
-        url = (
-            f"{self.graphql_url}"
-            f"query_hash={self.posts_hash}"
-            f"&variables={str_variables}"
-        )
-        yield response.follow(
-            url,
-            callback=self.user_post_parse,
-            cb_kwargs={
-                "username": username,
-                "user_id": user_id,
-                # на будущее: изучите в чем отличие глубокого копирования
-                "variables": deepcopy(variables),
-            },
-        )
 
 
 
-    # Получаем id желаемого пользователя
-    def fetch_user_id(self, text: str, username: str):
-        print()
-        regexp = '{"id":"\\d+","username":"%s"}' % username
-        #regexp = '"userId":"\\d+"'
-        matched = re.search(regexp, text).group()
-        return json.loads(matched).get("id")
-        # return matched.replace('"', '').split(':')[1]
-
-    def user_post_parse(
-        self,
-        response: HtmlResponse,
-        username: str,
-        user_id: str,
-        variables: dict,
-        page_number: int = 1,
-    ):
-        # followers = requests
-        print()
-
-        data = response.json()
-        # наиболее предпочтительный вариант
-        # try:
-        info = data["data"]["user"]["edge_owner_to_timeline_media"]
-        posts = info["edges"]
-        # работа с постами
-        for post in posts:
-            item = InstaparserItem()
-            item["user_id"] = user_id
-            node = post["node"]
-            item["photo"] = node["display_url"]
-            item["likes"] = node["edge_media_preview_like"]["count"]
-            item["post_data"] = node
-            yield item
-
-        page_info = info["page_info"]
-        # if page_info["has_next_page"]:
-        # стандартное условие и ограничение страниц для пагинации
-        if page_info["has_next_page"] and page_number < self.max_page_number:
-            variables["after"] = page_info["end_cursor"]
-            str_variables = self.make_str_variables(variables)
-            url = (
-                f"{self.graphql_url}"
-                f"query_hash={self.posts_hash}"
-                f"&variables={str_variables}"
-            )
-            yield response.follow(
-                url,
-                callback=self.user_post_parse,
-                cb_kwargs={
-                    "username": username,
-                    "user_id": user_id,
-                    # на будущее: изучите в чем отличие глубокого копирования
-                    "variables": deepcopy(variables),
-                    "page_number": page_number + 1,
-                },
-            )
